@@ -91,7 +91,7 @@ class SpineProofreadVisualizer:
         self.spine_index_go_button = None  # Go button for spine index navigation
 
         # Visual settings
-        self.sphere_radius = 40
+        self.sphere_radius = 200
 
     def _generate_spine_names(self):
         """
@@ -171,11 +171,11 @@ class SpineProofreadVisualizer:
         if self.radius_indicator_actor is not None:
             self.plotter.remove_actor(self.radius_indicator_actor)
 
-        self.radius_indicator_actor = self.plotter.add_mesh(
-            radius_sphere,
-            color="blue",
-            opacity=0.2,
-        )
+        # self.radius_indicator_actor = self.plotter.add_mesh(
+        #     radius_sphere,
+        #     color="blue",
+        #     opacity=0.2,
+        # )
 
     def update_info_text(self):
         """Update the information text display."""
@@ -187,15 +187,7 @@ class SpineProofreadVisualizer:
         radius_text = f"{current_radius:.2f} nm"
 
         info_text = (
-            f"Point {self.current_index + 1}/{self.num_points} - Status: {label} - Radius: {radius_text}\n"
-            f"\n"
-            f"Controls:\n"
-            f"  Arrow Keys: Navigate points\n"
-            f"  M: Accept | N: Reject\n"
-            f"  I/K: Move forward/backward | J/L: Move left/right | U/O: Move down/up\n"
-            f"  (Shift + key for larger steps)\n"
-            f"  H: Reset point to original position\n"
-            f"  Ctrl/Cmd S: Save results"
+            ""
         )
 
         self.plotter.add_text(
@@ -447,35 +439,6 @@ class SpineProofreadVisualizer:
         # Show radius indicator for the first point
         self.update_sphere_color(self.current_index)
 
-        # Add annotation points and labels if available
-        if self.annotation is not None:
-            for annotation_point, annotation_name in self.annotation:
-                # Add small sphere for annotation point (yellow/gold color)
-                annotation_sphere = pv.Sphere(radius=self.sphere_radius * 0.5, center=annotation_point)
-                annotation_actor = self.plotter.add_mesh(
-                    annotation_sphere,
-                    color='gold',
-                    opacity=0.9
-                )
-                self.annotation_actors.append(annotation_actor)
-
-                # Add billboarded text label that always faces the camera
-                label_actor = self.plotter.add_point_labels(
-                    [annotation_point],
-                    [annotation_name],
-                    font_size=14,
-                    text_color='white',
-                    point_color='gold',
-                    point_size=0,  # Don't show the point itself (we have the sphere)
-                    render_points_as_spheres=False,
-                    always_visible=True,
-                    shape_opacity=0.7,
-                    fill_shape=True,
-                    shape_color='black'
-                )
-                self.annotation_label_actors.append(label_actor)
-
-        self.update_annotation_label_visibility()
 
     def on_text_focus_in(self):
         """Called when text input gains focus."""
@@ -653,7 +616,7 @@ class SpineProofreadVisualizer:
         layout.addLayout(spine_nav_layout)
 
         # Add loading text
-        self.plotter.add_text("Loading...", position='upper_left', font_size=10, name='info_text')
+        self.plotter.add_text("", position='upper_left', font_size=10, name='info_text')
 
         # Initialize scene and callbacks
         self.initialize_scene()
