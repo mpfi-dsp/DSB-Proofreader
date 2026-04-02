@@ -134,7 +134,7 @@ class SpineProofreadVisualizer:
             return "red"
 
         if index == self.current_index:
-            return "blue"
+            return (188/255, 9/255, 188/255)
 
         return "gray"
 
@@ -173,8 +173,8 @@ class SpineProofreadVisualizer:
 
         self.radius_indicator_actor = self.plotter.add_mesh(
             radius_sphere,
-            color="blue",
-            opacity=0.2,
+            color=(188/255, 9/255, 188/255),
+            opacity=60/255,
         )
 
     def update_info_text(self):
@@ -187,15 +187,7 @@ class SpineProofreadVisualizer:
         radius_text = f"{current_radius:.2f} nm"
 
         info_text = (
-            f"Point {self.current_index + 1}/{self.num_points} - Status: {label} - Radius: {radius_text}\n"
-            f"\n"
-            f"Controls:\n"
-            f"  Arrow Keys: Navigate points\n"
-            f"  M: Accept | N: Reject\n"
-            f"  I/K: Move forward/backward | J/L: Move left/right | U/O: Move down/up\n"
-            f"  (Shift + key for larger steps)\n"
-            f"  H: Reset point to original position\n"
-            f"  Ctrl/Cmd S: Save results"
+            f""
         )
 
         self.plotter.add_text(
