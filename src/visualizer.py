@@ -493,7 +493,7 @@ class SpineProofreadVisualizer:
             distance = np.linalg.norm(current_point - annotation_point)
 
             if self.close_labels_only:
-                if distance < 6000:
+                if distance < 0:
                     self.annotation_label_actors[i].SetVisibility(True)
                 else:
                     self.annotation_label_actors[i].SetVisibility(False)
@@ -574,14 +574,14 @@ class SpineProofreadVisualizer:
 
         # Create main window
         self.main_window = QtWidgets.QMainWindow()
-        self.main_window.setWindowTitle("Spine Proofreading Tool")
+        self.main_window.setWindowTitle("")
 
         # Override close event to prompt for unsaved changes
         self.main_window.closeEvent = self.closeEvent
 
         # Add toolbar
-        toolbar = self.create_toolbar()
-        self.main_window.addToolBar(toolbar)
+        # toolbar = self.create_toolbar()
+        # self.main_window.addToolBar(toolbar)
 
         # Create central widget and layout
         central_widget = QtWidgets.QWidget()
