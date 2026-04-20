@@ -76,19 +76,19 @@ class SpineProofreadVisualizer:
         self.head_center_actors = []
         self.radius_indicator_actor = None  # Placeholder
         self.head_radii: list[float | None] = initial_radii if initial_radii is not None else [None] * self.num_points
-        self.annotation_actors = []  # Store annotation point actors
-        self.annotation_label_actors = []  # Store annotation label actors
 
         # GUI components
         self.text_input = None
         self.text_input_active = False
         self.main_window = None
-        self.close_labels_only = True  # Show only close labels by default
         self.last_saved_time = None  # Track last save time
         self.has_unsaved_changes = False  # Track unsaved changes
         self.last_saved_label = None  # Label to display last saved time
         self.spine_index_input = None  # Line edit for spine index navigation
         self.spine_index_go_button = None  # Go button for spine index navigation
+
+        self.radius_update_timer = None
+        self.pending_radius_update_index = None
 
         # Visual settings
         self.sphere_radius = 40
@@ -228,12 +228,15 @@ class SpineProofreadVisualizer:
 
         :param index: The index of the sphere to navigate to. If out of bounds, it will wrap around using modulo.
         """
+        # If there's a pending radius update, compute it immediately before switching
+        if self.radius_update_timer is not None and self.radius_update_timer.isActive():
+            self.radius_update_timer.stop()
+            self._recalculate_radius_after_move()
 
         self.current_index = index
         self.update_sphere_color(self.current_index)
         self.text_input.setText(self.spine_names[self.current_index])
         self.update_spine_index_input()
-        self.update_annotation_label_visibility()
         self.focus_on_current_sphere()
 
     def mark_accepted(self):
@@ -319,9 +322,29 @@ class SpineProofreadVisualizer:
         # Update visualization
         self.has_unsaved_changes = True
         self.update_sphere_color(self.current_index)
-        self._update_radius_indicator()
+
+        if self.radius_update_timer is not None:
+            self.pending_radius_update_index = self.current_index
+            self.radius_update_timer.start(1000)
 
         self.focus_on_current_sphere(move_camera=False)
+
+    def _recalculate_radius_after_move(self):
+        if self.pending_radius_update_index is None:
+            return
+
+        index = self.pending_radius_update_index
+
+        # Force recalculation
+        self.head_radii[index] = radius.get_radius_point(
+            self.points[index], self.trimesh_mesh, n_rays=200
+        )
+
+        if hasattr(self, 'current_index') and index == self.current_index:
+            self._update_radius_indicator()
+            self.update_info_text()
+            if self.plotter is not None:
+                self.plotter.render()
 
     def update_last_saved_label(self):
         """Update the last saved time label."""
@@ -447,36 +470,6 @@ class SpineProofreadVisualizer:
         # Show radius indicator for the first point
         self.update_sphere_color(self.current_index)
 
-        # Add annotation points and labels if available
-        if self.annotation is not None:
-            for annotation_point, annotation_name in self.annotation:
-                # Add small sphere for annotation point (yellow/gold color)
-                annotation_sphere = pv.Sphere(radius=self.sphere_radius * 0.5, center=annotation_point)
-                annotation_actor = self.plotter.add_mesh(
-                    annotation_sphere,
-                    color='gold',
-                    opacity=0.9
-                )
-                self.annotation_actors.append(annotation_actor)
-
-                # Add billboarded text label that always faces the camera
-                label_actor = self.plotter.add_point_labels(
-                    [annotation_point],
-                    [annotation_name],
-                    font_size=14,
-                    text_color='white',
-                    point_color='gold',
-                    point_size=0,  # Don't show the point itself (we have the sphere)
-                    render_points_as_spheres=False,
-                    always_visible=True,
-                    shape_opacity=0.7,
-                    fill_shape=True,
-                    shape_color='black'
-                )
-                self.annotation_label_actors.append(label_actor)
-
-        self.update_annotation_label_visibility()
-
     def on_text_focus_in(self):
         """Called when text input gains focus."""
         self.text_input_active = True
@@ -489,32 +482,6 @@ class SpineProofreadVisualizer:
         """Called when text input changes."""
         self.spine_names[self.current_index] = text
         self.has_unsaved_changes = True
-
-    def update_annotation_label_visibility(self):
-        """Update visibility of annotation labels based on distance to current point."""
-        if self.annotation is None or not self.annotation_label_actors:
-            return
-
-        current_point = self.points[self.current_index]
-
-        for i, (annotation_point, annotation_name) in enumerate(self.annotation):
-            distance = np.linalg.norm(current_point - annotation_point)
-
-            if self.close_labels_only:
-                if distance < 6000:
-                    self.annotation_label_actors[i].SetVisibility(True)
-                else:
-                    self.annotation_label_actors[i].SetVisibility(False)
-            else:
-                # Show all labels
-                self.annotation_label_actors[i].SetVisibility(True)
-
-        self.plotter.render()
-
-    def toggle_close_labels_only(self, checked):
-        """Toggle between showing all labels or only close labels."""
-        self.close_labels_only = checked
-        self.update_annotation_label_visibility()
 
     def create_toolbar(self):
         """Create toolbar with main action buttons."""
@@ -555,15 +522,6 @@ class SpineProofreadVisualizer:
         reject_action.triggered.connect(self.mark_rejected)
         toolbar.addAction(reject_action)
 
-        toolbar.addSeparator()
-
-        # Close labels only toggle button
-        close_labels_action = QtWidgets.QAction("🏷️ Close labels only", self.main_window)
-        close_labels_action.setCheckable(True)
-        close_labels_action.setChecked(True)  # Checked by default
-        close_labels_action.toggled.connect(self.toggle_close_labels_only)
-        toolbar.addAction(close_labels_action)
-
         return toolbar
 
     def setup_qt_shortcuts(self):
@@ -579,6 +537,10 @@ class SpineProofreadVisualizer:
         app = QtWidgets.QApplication.instance()
         if app is None:
             app = QtWidgets.QApplication([])
+
+        self.radius_update_timer = QtCore.QTimer()
+        self.radius_update_timer.setSingleShot(True)
+        self.radius_update_timer.timeout.connect(self._recalculate_radius_after_move)
 
         # Create main window
         self.main_window = QtWidgets.QMainWindow()
