@@ -44,7 +44,7 @@ Use the following controls to change how the visualization looks:
 
 ### Accepting or rejecting spines
 
-You can accept or reject the currently-visualized spine head by clicking the "Accept" or "Reject" buttons in the toolbar, which is on the top of the proofreader window.
+You can accept or reject the currently visualized spine head by clicking the "Accept" or "Reject" buttons in the toolbar, which is on the top of the proofreader window.
 
 You may also use the following keyboard shortcuts:
 
@@ -85,21 +85,21 @@ These controls are relative to the camera view. You may use the Shift key while 
 
 ### The status text
 
-The status text in the top left corner of the 3D visualizer indicates the status of the currently-visualized dendritic spine and a reminder for some proofreader-specific keyboard shortcuts.
+The status text in the top left corner of the 3D visualizer indicates the status of the currently visualized dendritic spine and a reminder for some proofreader-specific keyboard shortcuts.
 
 ![Status text](images/user_guide/status_text.png)
 
 "Point 3/204" indicates that the proofreader is visualizing spine head ID 3 (out of 204 spines).
 
-"Status: accepted" means that you accepted this spine head. It may also show "Status: rejected" or "Status: unlabeled".
+"Status: accepted" means that you accepted this spine head. It may also show "Status: rejected" or "Status: unlabeled."
 
 "Radius: 398.74 nm" shows the radius, in nanometers, that DSB computed for this spine head.
 
 ### Naming a spine head
 
-Spine heads are automatically assigned the name of the nearest label. Sometimes the name is incorrect or undefined if there are too many or not enough labels in proximity of the spine head. 
+Spine heads are automatically assigned the name of the nearest label. Sometimes the name is incorrect or undefined if there are too many or not enough labels close to the spine head. 
 
-You can adjust the name of the currently-selected spine head by editing the text box on the bottom of the window.
+You can adjust the name of the currently selected spine head by editing the text box on the bottom of the window.
 
 ![Naming a spine head](images/user_guide/spine_name.png)
 
@@ -107,10 +107,42 @@ You can adjust the name of the currently-selected spine head by editing the text
 
 You may use the "Save" button in the toolbar or the keyboard shortcut Ctrl/Cmd + S to save. It is recommended to save often.
 
-The first save may take several minutes because the proofreader needs to compute spine head radii for all points. While saving for the first time, the window will freeze. Do not close it to avoid losing progres.  Any subsequent saves should be near instant.
+> **⚠️ Warning:** The first save may take several minutes because the proofreader needs to compute spine head radii for all points. While saving for the first time, the window will freeze. Do not close it to avoid losing progress.  Any later saves should be near instant.
 
 You can see the last time you saved in the session on the bottom right of the proofreader window. 
 
 ![Last saved time](images/user_guide/last_saved.png)
 
 If you reload a dsb file after saving, the proofreader will remember all spine head names, accepts/rejects, and spine head position adjustments that you made.
+
+After saving, the proofreader creates a new .csv file in the same directory as the loaded .dsb file. The .csv file contains all necessary information for further data analysis.
+
+### Rolling back to a previous save
+
+You may roll back a .dsb file to a previous save by modifying the content of the .dsb file itself.
+
+**Step 1:** Make a backup (copy) of the DSB file to modify.
+**Step 2:** Rename the .dsb file to a .zip file. There should *not* be a .dsb file extension. 
+
+> **ℹ️ Info:** Windows may warn that changing a file extension may make the file unusable. In this case, changing the file extension is safe. Click "Yes" to change the filename anyway.
+
+![Windows dialog](images/user_guide/confirm.png)
+
+**Step 3:** Extract the zip file and open the extracted folder.
+
+> **❗ Critical:** Do not rename *any* files or delete any non-.csv files in this folder. Doing so will corrupt the .dsb file.
+
+
+> **ℹ️ Info:** If you saved this DSB file before, you will see several .csv files with a timestamp at the end of their filename. Timestamps are in the format YYYYMMDD_HHMMSS. These are all the DSB saves.
+
+**Step 4:** Identify the .csv file to roll back to.
+
+**Step 5:** Delete all .csv files with a timestamp *after* the .dsb file you are rolling back to.
+
+**Step 6:** Go back to the directory containing your .dsb files. Recompress the folder to a .zip.
+
+![compress.png](images/user_guide/compress.png)
+
+**Step 7:** Rename the newly compressed .zip file to a .dsb file. Windows may warn you about changing the file extension. Click "Yes" to change the file extension anyway.
+
+**Step 8:** Open the new file in the DSB proofreader. If the proofreader cannot open the file, revert to your backup .dsb file and try these steps again. If it still doesn't work, contact [open an issue](https://github.com/AlexanderJCS/dsb-proofreader/issues/new) or Alex Castronovo for help.
