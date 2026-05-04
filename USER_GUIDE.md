@@ -115,7 +115,7 @@ You can see the last time you saved in the session on the bottom right of the pr
 
 If you reload a dsb file after saving, the proofreader will remember all spine head names, accepts/rejects, and spine head position adjustments that you made.
 
-After saving, the proofreader creates a new .csv file in the same directory as the loaded .dsb file. The .csv file contains all necessary information for further data analysis.
+After saving, the proofreader creates a new .csv file in the same directory as the loaded .dsb file, named `[your-dsb-file-name]_proofread.csv`. The .csv file contains all necessary information for further data analysis.
 
 ### Rolling back to a previous save
 
